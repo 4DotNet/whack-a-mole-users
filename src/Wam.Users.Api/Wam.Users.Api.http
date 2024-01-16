@@ -1,0 +1,6 @@
+@Wam.Users.Api_HostAddress = http://localhost:5227
+
+GET {{Wam.Users.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
