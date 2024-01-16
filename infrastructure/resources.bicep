@@ -6,8 +6,12 @@ param environmentName string
 param developersGroup string
 param integrationEnvironment object
 
+param acrLoginServer string
+param acrUsername string
+param acrPassword string
+
 param containerPort int = 80
-param containerAppName string = 'pollstar-users-api'
+param containerAppName string = 'wam-users-api'
 
 resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
   name: integrationEnvironment.containerAppsEnvironment
@@ -47,7 +51,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: false
+        external: true
         targetPort: containerPort
         transport: 'auto'
         allowInsecure: false
@@ -63,11 +67,25 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
         appPort: containerPort
         appId: containerAppName
       }
+      secrets: [
+        {
+          name: 'container-registry-password'
+          value: acrPassword
+        }
+      ]
+      registries: [
+        {
+          server: acrLoginServer
+          username: acrUsername
+          passwordSecretRef: 'container-registry-password'
+        }
+      ]
     }
+
     template: {
       containers: [
         {
-          image: 'pollstarint${environmentName}neuacr.azurecr.io/${containerAppName}:${containerVersion}'
+          image: '${acrLoginServer}/${containerAppName}:${containerVersion}'
           name: containerAppName
           resources: {
             cpu: json('0.25')

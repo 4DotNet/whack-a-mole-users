@@ -13,6 +13,10 @@ param locationAbbreviation string
 param containerVersion string = '1.0.0'
 param developersGroup string
 param integrationEnvironment object
+param acrLoginServer string
+param acrUsername string
+@secure()
+param acrPassword string
 
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
@@ -36,5 +40,8 @@ module resourcesModule 'resources.bicep' = {
     integrationEnvironment: integrationEnvironment
     environmentName: environmentName
     developersGroup: developersGroup
+    acrLoginServer: acrLoginServer
+    acrUsername: acrUsername
+    acrPassword: acrPassword
   }
 }

@@ -91,4 +91,4 @@ jobs:
         id: arm
         uses: Azure/cli@v1
         with:
-          inlineScript: az deployment sub create --name $IMAGE_NAME --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/test.main.json --parameters containerVersion=${{needs.versionize.outputs.semver}}
+          inlineScript: az deployment sub create --name $IMAGE_NAME --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/test.main.json --parameters containerVersion=${{needs.versionize.outputs.semver}} acrLoginServer=${{ secrets.ACR_LOGIN_SERVER }} acrUsername=${{ secrets.ACR_USERNAME }} acrPassword=${{ secrets.ACR_PASSWORD }}

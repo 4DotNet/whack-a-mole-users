@@ -9,3 +9,6 @@ param integrationEnvironment = {
   containerAppsEnvironment: 'wam-int-tst-env'
   appConfiguration: 'wam-int-tst-appcfg'
 }
+param acrLoginServer = ''
+param acrPassword = ''
+param acrUsername = ''
