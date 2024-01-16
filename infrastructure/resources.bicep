@@ -39,6 +39,16 @@ resource storageAccountTable 'Microsoft.Storage/storageAccounts/tableServices/ta
   parent: storageAccountTableService
 }]
 
+module storageAccountConfigurationValue 'configuration-value.bicep' = {
+  name: 'storageAccountConfigurationValue'
+  scope: resourceGroup(integrationEnvironment.resourceGroup)
+  params: {
+    appConfigurationName: integrationEnvironment.appConfiguration
+    settingName: 'Azure__UsersStorageAccount'
+    settingValue: storageAccount.name
+  }
+}
+
 resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: '${defaultResourceName}-aca'
   location: location
