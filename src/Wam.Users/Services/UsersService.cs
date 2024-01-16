@@ -1,4 +1,5 @@
-﻿using Wam.Users.DataTransferObjects;
+﻿using Microsoft.Extensions.Logging;
+using Wam.Users.DataTransferObjects;
 using Wam.Users.DomainModels;
 using Wam.Users.Enums;
 using Wam.Users.Mappings;
@@ -6,10 +7,11 @@ using Wam.Users.Repositories;
 
 namespace Wam.Users.Services;
 
-public class UsersService(IUsersRepository usersRepository) : IUsersService
+public class UsersService(IUsersRepository usersRepository, ILogger<UsersService> logger) : IUsersService
 {
     public async Task<UserDetailsDto> Create(UserCreateDto dto, CancellationToken cancellationToken)
     {
+        logger.LogInformation("Creating user {@User}", dto);
         var user = User.Create(dto.DisplayName, dto.EmailAddress);
         if (await usersRepository.Save(user, cancellationToken) == false)
         {
