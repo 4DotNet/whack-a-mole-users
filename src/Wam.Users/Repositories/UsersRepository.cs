@@ -75,7 +75,7 @@ public class UsersRepository : IUsersRepository
         ICacheClientFactory cacheClientFactory)
     {
         _createClient = cacheClientFactory.CreateClient();
-        var tableStorageUrl = $"https://{configuration.Value.StorageAccountName}.table.core.windows.net";
+        var tableStorageUrl = $"https://{configuration.Value.UsersStorageAccountName}.table.core.windows.net";
         _tableClient = new TableClient(new Uri(tableStorageUrl), TableName,CloudIdentity.GetCloudIdentity());
     }
 }

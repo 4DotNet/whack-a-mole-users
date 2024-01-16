@@ -1,10 +1,9 @@
 using HexMaster.RedisCache;
 using Wam.Api.Infrastructure;
 using Wam.Api.Infrastructure.Swagger;
+using Wam.Core.Configuration;
 using Wam.Core.ExtensionMethods;
 using Wam.Core.Identity;
-using Wam.Users.Repositories;
-using Wam.Users.Services;
 
 var corsPolicyName = "DefaultCors";
 var builder = WebApplication.CreateBuilder(args);
@@ -14,22 +13,20 @@ try
 {
     builder.Configuration.AddAzureAppConfiguration(options =>
     {
-        options.Connect(new Uri(builder.Configuration.GetRequiredValue("AzureAppConfiguration")), azureCredential)
-            .ConfigureKeyVault(kv => kv.SetCredential(azureCredential))
+        var appConfigurationUrl = builder.Configuration.GetRequiredValue("AzureAppConfiguration");
+        options.Connect(new Uri(appConfigurationUrl), azureCredential)
             .UseFeatureFlags();
     });
 }
 catch (Exception ex)
 {
-    throw new Exception("Configuration failed", ex);
+    throw new Exception("Failed to configure the Whack-A-Mole Users service, Azure App Configuration failed", ex);
 }
 // Add services to the container.
 
-builder.Services.AddHexMasterCache(builder.Configuration);
-
-builder.Services.AddTransient<IUsersService, UsersService>();
-builder.Services.AddTransient<IUsersRepository, UsersRepository>();
-builder.Services.AddApplicationInsightsTelemetry();
+builder.Services
+    .AddWamCoreConfiguration(builder.Configuration)
+    .AddWamUsersModule();
 
 builder.Services.AddCors(options =>
 {

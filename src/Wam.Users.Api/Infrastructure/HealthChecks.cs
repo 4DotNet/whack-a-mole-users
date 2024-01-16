@@ -20,8 +20,8 @@ public static class HealthChecks
 
     public static void UseDefaultHealthChecks(this IApplicationBuilder app)
     {
-        //app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = reg => reg.Tags.Contains(HealthTags.Health) });
-        //app.UseHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = reg => reg.Tags.Contains(HealthTags.Ready), ResponseWriter = ResponseWriter });
+        app.UseHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = reg => reg.Tags.Contains(HealthTags.Health) });
+        app.UseHealthChecks("/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = reg => reg.Tags.Contains(HealthTags.Ready), ResponseWriter = ResponseWriter });
     }
 
     public static async Task ResponseWriter(HttpContext context, HealthReport report)
