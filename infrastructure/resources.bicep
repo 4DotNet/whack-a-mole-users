@@ -8,9 +8,10 @@ param integrationEnvironment object
 
 param acrLoginServer string
 param acrUsername string
+@secure()
 param acrPassword string
 
-param containerPort int = 80
+param containerPort int = 8080
 param containerAppName string = 'wam-users-api'
 
 resource containerAppEnvironments 'Microsoft.App/managedEnvironments@2022-03-01' existing = {
