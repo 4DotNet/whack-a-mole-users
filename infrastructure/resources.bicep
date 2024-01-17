@@ -56,7 +56,7 @@ module serviceNameConfigurationValue 'configuration-value.bicep' = {
   params: {
     appConfigurationName: integrationEnvironment.appConfiguration
     settingName: 'Services:UsersService'
-    settingValue: 'http://${containerAppName}'
+    settingValue: apiContainerApp.name
   }
 }
 
