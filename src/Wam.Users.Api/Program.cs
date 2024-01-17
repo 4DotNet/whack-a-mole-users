@@ -1,4 +1,3 @@
-using HexMaster.RedisCache;
 using Wam.Api.Infrastructure;
 using Wam.Api.Infrastructure.Swagger;
 using Wam.Core.Configuration;
