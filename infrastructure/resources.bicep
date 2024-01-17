@@ -56,7 +56,7 @@ module serviceNameConfigurationValue 'configuration-value.bicep' = {
   params: {
     appConfigurationName: integrationEnvironment.appConfiguration
     settingName: 'Services:UsersService'
-    settingValue: containerAppName
+    settingValue: apiContainerApp.name
   }
 }
 
@@ -72,7 +72,7 @@ resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: true
+        external: false
         targetPort: containerPort
         transport: 'auto'
         allowInsecure: false
