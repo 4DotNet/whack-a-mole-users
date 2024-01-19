@@ -11,8 +11,6 @@ namespace Wam.Users.Repositories;
 
 public class UsersRepository : IUsersRepository
 {
-    private readonly ICacheClient _createClient;
-
     private const string TableName = "users";
     private const string PartitionKey = "users";
     private readonly TableClient _tableClient;
@@ -29,32 +27,19 @@ public class UsersRepository : IUsersRepository
             Timestamp = DateTimeOffset.UtcNow
         };
         var response = await _tableClient.UpsertEntityAsync(
-            entity, 
+            entity,
             TableUpdateMode.Replace,
             cancellationToken);
-        if (response.Status.IsHttpSuccessCode())
-        {
-            await UpdateCache(entity);
-            return true;
-        }
-
-        return false;
+        return response.Status.IsHttpSuccessCode();
     }
 
     public async Task<User> Get(Guid userId, CancellationToken cancellationToken)
     {
-        var cacheKey = $"user:{userId}";
-        var entity =  await _createClient.GetOrInitializeAsync(() => GetFromTableStorage(userId, cancellationToken), cacheKey);
+        var entity =  await GetFromTableStorage(userId, cancellationToken);
         return new User(userId,
             entity.DisplayName,
             entity.EmailAddress,
             (byte?)entity.ExclusionReason);
-    }
-
-    private  Task UpdateCache(UserEntity entity)
-    {
-        var cacheKey = $"user:{entity.RowKey}";
-        return _createClient.SetAsAsync(cacheKey, entity);
     }
 
     private async Task<UserEntity> GetFromTableStorage(Guid userId, CancellationToken cancellationToken)
@@ -74,7 +59,6 @@ public class UsersRepository : IUsersRepository
         IOptions<AzureServices> configuration, 
         ICacheClientFactory cacheClientFactory)
     {
-        _createClient = cacheClientFactory.CreateClient();
         var tableStorageUrl = $"https://{configuration.Value.UsersStorageAccountName}.table.core.windows.net";
         _tableClient = new TableClient(new Uri(tableStorageUrl), TableName,CloudIdentity.GetCloudIdentity());
     }
