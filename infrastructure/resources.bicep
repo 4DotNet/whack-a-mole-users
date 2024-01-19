@@ -59,7 +59,6 @@ module serviceNameConfigurationValue 'configuration-value.bicep' = {
     settingValue: apiContainerApp.name
   }
 }
-
 resource apiContainerApp 'Microsoft.App/containerApps@2022-03-01' = {
   name: '${defaultResourceName}-aca'
   location: location
