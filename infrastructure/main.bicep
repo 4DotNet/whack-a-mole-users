@@ -17,6 +17,7 @@ param acrLoginServer string
 param acrUsername string
 @secure()
 param acrPassword string
+param corsHostnames array
 
 var apiResourceGroupName = toLower('${systemName}-${environmentName}-${locationAbbreviation}')
 
@@ -43,5 +44,6 @@ module resourcesModule 'resources.bicep' = {
     acrLoginServer: acrLoginServer
     acrUsername: acrUsername
     acrPassword: acrPassword
+    corsHostnames: corsHostnames
   }
 }
