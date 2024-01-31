@@ -2,6 +2,7 @@ using Wam.Api.Infrastructure;
 using Wam.Api.Infrastructure.Swagger;
 using Wam.Core.Configuration;
 using Wam.Core.ExtensionMethods;
+using Wam.Core.Filters;
 using Wam.Core.Identity;
 
 var corsPolicyName = "DefaultCors";
@@ -44,7 +45,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers(options => options.Filters.Add(new WamExceptionFilter())).AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger("Whack-A-Mole Users API", enableSwagger: !builder.Environment.IsProduction());
 
