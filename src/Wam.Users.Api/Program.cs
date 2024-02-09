@@ -25,7 +25,7 @@ catch (Exception ex)
 // Add services to the container.
 
 builder.Services
-    .AddWamCoreConfiguration(builder.Configuration)
+    .AddWamCoreConfiguration(builder.Configuration, daprAppId: nameof(ServicesConfiguration.UsersService))
     .AddWamUsersModule();
 
 builder.Services.AddCors(options =>

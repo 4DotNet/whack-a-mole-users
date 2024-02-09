@@ -1,4 +1,5 @@
-﻿using HexMaster.RedisCache.Abstractions;
+﻿using Dapr.Client;
+using HexMaster.RedisCache.Abstractions;
 using Microsoft.Extensions.Logging;
 using Wam.Core.Cache;
 using Wam.Users.DataTransferObjects;
@@ -12,8 +13,11 @@ namespace Wam.Users.Services;
 public class UsersService(
     IUsersRepository usersRepository, 
     ILogger<UsersService> logger,
-    ICacheClientFactory cacheClientFactory) : IUsersService
+    DaprClient daprClient) : IUsersService
 {
+
+    private const string StateStoreName = "statestore";
+
     public async Task<UserDetailsDto> Create(UserCreateDto dto, CancellationToken cancellationToken)
     {
         logger.LogInformation("Creating user {@User}", dto);
@@ -29,9 +33,21 @@ public class UsersService(
     
     public  Task<UserDetailsDto> Get(Guid id, CancellationToken cancellationToken)
     {
-        var cacheClient = cacheClientFactory.CreateClient();
-        var cacheKey = CacheName.UserDetails(id);
-        return  cacheClient.GetOrInitializeAsync(() => GetUserDetailsFromRepository(id, cancellationToken), cacheKey);
+        return GetFromStateStoreOrRepository(id, cancellationToken);
+    }
+
+    private async Task<UserDetailsDto> GetFromStateStoreOrRepository(Guid userId, CancellationToken cancellationToken)
+    {
+        var stateStoreValue = await daprClient.GetStateAsync<UserDetailsDto>(StateStoreName, CacheName.UserDetails(userId),
+            cancellationToken: cancellationToken);
+        if (stateStoreValue != null)
+        {
+            return stateStoreValue;
+        }
+
+        var userDetailsFromRepository = await GetUserDetailsFromRepository(userId, cancellationToken);
+        await daprClient.SaveStateAsync(StateStoreName, CacheName.UserDetails(userId), userDetailsFromRepository, cancellationToken: cancellationToken);
+        return userDetailsFromRepository;
     }
 
     private async Task<UserDetailsDto> GetUserDetailsFromRepository(Guid userId, CancellationToken cancellationToken)
@@ -58,9 +74,7 @@ public class UsersService(
         var result = await usersRepository.Save(domainModel, cancellationToken);
         if (result)
         {
-            var cacheClient = cacheClientFactory.CreateClient();
-            var cacheKey = CacheName.UserDetails(domainModel.Id);
-            await cacheClient.SetAsAsync(cacheKey, domainModel.ToDto());
+await             daprClient.SaveStateAsync(StateStoreName, CacheName.UserDetails(domainModel.Id), domainModel.ToDto());
         }
         return result;
     }
