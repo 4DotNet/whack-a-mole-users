@@ -1,5 +1,6 @@
 ﻿using Dapr.Client;
-using HexMaster.RedisCache.Abstractions;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Logging;
 using Wam.Core.Cache;
 using Wam.Users.DataTransferObjects;
@@ -13,6 +14,7 @@ namespace Wam.Users.Services;
 public class UsersService(
     IUsersRepository usersRepository, 
     ILogger<UsersService> logger,
+    TelemetryClient telemetry,
     DaprClient daprClient) : IUsersService
 {
 
@@ -24,6 +26,11 @@ public class UsersService(
         var user = User.Create(dto.DisplayName, dto.EmailAddress);
         if (await SaveAndUpdateCache(user, cancellationToken) == false)
         {
+            telemetry.TrackEvent(new EventTelemetry
+            {
+                Name = "newUserCreated",
+                Timestamp = DateTimeOffset.UtcNow
+            });
             throw new Exception("Failed to save user");
         }
         return user.ToDto();
