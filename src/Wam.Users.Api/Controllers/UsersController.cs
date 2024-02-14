@@ -24,6 +24,7 @@ public class UsersController(IUsersService usersService) : ControllerBase
         var result = await usersService.Get(id, cancellationToken);
         return Ok(result);
     }
+    [Authorize]
     [HttpGet("{id:guid}/Ban/{reason?}")]
     public async Task<ActionResult<UserDetailsDto>> Ban(Guid id, CancellationToken cancellationToken, byte? reason = 2)
     {
