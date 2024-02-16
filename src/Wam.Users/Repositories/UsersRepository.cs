@@ -1,4 +1,5 @@
-﻿using Azure.Data.Tables;
+﻿using Azure;
+using Azure.Data.Tables;
 using HexMaster.RedisCache.Abstractions;
 using Microsoft.Extensions.Options;
 using Wam.Core.Configuration;
@@ -46,14 +47,20 @@ public class UsersRepository : IUsersRepository
 
     private async Task<UserEntity> GetFromTableStorage(Guid userId, CancellationToken cancellationToken)
     {
-        var cloudResponse = await _tableClient.GetEntityAsync<UserEntity>(PartitionKey, userId.ToString(),
-            cancellationToken: cancellationToken);
-
-        if (cloudResponse.HasValue)
+        try
         {
-            return cloudResponse.Value;
-        }
+            var cloudResponse = await _tableClient.GetEntityAsync<UserEntity>(PartitionKey, userId.ToString(),
+                cancellationToken: cancellationToken);
 
+            if (cloudResponse.HasValue)
+            {
+                return cloudResponse.Value;
+            }
+        }
+        catch (RequestFailedException ex) when (ex.Status == 404)
+        {
+            throw new WamUserException(UserErrorCode.UserNotFound, $"The user with GUID {userId} could not be found");
+        }
         throw new WamUserException(UserErrorCode.UserNotFound, $"The user with GUID {userId} could not be found");
     }
 
