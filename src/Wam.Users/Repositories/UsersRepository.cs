@@ -1,7 +1,8 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using HexMaster.RedisCache.Abstractions;
+using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Abstractions;
 using Wam.Core.Configuration;
 using Wam.Core.ExtensionMethods;
 using Wam.Core.Identity;
@@ -14,6 +15,7 @@ namespace Wam.Users.Repositories;
 
 public class UsersRepository : IUsersRepository
 {
+    private readonly TelemetryClient _telemetryClient;
     private const string TableName = "users";
     private const string PartitionKey = "users";
     private readonly TableClient _tableClient;
@@ -33,6 +35,7 @@ public class UsersRepository : IUsersRepository
             entity,
             TableUpdateMode.Replace,
             cancellationToken);
+        _telemetryClient.TrackEvent("UserSaved");
         return response.Status.IsHttpSuccessCode();
     }
 
@@ -54,6 +57,7 @@ public class UsersRepository : IUsersRepository
 
             if (cloudResponse.HasValue)
             {
+                _telemetryClient.TrackEvent("UserResolved");
                 return cloudResponse.Value;
             }
         }
@@ -65,8 +69,10 @@ public class UsersRepository : IUsersRepository
     }
 
     public UsersRepository(
+        TelemetryClient telemetryClient,
         IOptions<AzureServices> configuration)
     {
+        _telemetryClient = telemetryClient;
         var tableStorageUrl = $"https://{configuration.Value.UsersStorageAccountName}.table.core.windows.net";
         _tableClient = new TableClient(new Uri(tableStorageUrl), TableName,CloudIdentity.GetCloudIdentity());
     }
