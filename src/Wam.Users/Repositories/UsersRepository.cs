@@ -6,6 +6,8 @@ using Wam.Core.ExtensionMethods;
 using Wam.Core.Identity;
 using Wam.Users.DomainModels;
 using Wam.Users.Entities;
+using Wam.Users.ErrorCodes;
+using Wam.Users.Exceptions;
 
 namespace Wam.Users.Repositories;
 
@@ -52,12 +54,11 @@ public class UsersRepository : IUsersRepository
             return cloudResponse.Value;
         }
 
-        throw new Exception("User not found");
+        throw new WamUserException(UserErrorCode.UserNotFound, $"The user with GUID {userId} could not be found");
     }
 
     public UsersRepository(
-        IOptions<AzureServices> configuration, 
-        ICacheClientFactory cacheClientFactory)
+        IOptions<AzureServices> configuration)
     {
         var tableStorageUrl = $"https://{configuration.Value.UsersStorageAccountName}.table.core.windows.net";
         _tableClient = new TableClient(new Uri(tableStorageUrl), TableName,CloudIdentity.GetCloudIdentity());
