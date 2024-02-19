@@ -12,13 +12,20 @@ using Wam.Users.Repositories;
 namespace Wam.Users.Services;
 
 public class UsersService(
-    IUsersRepository usersRepository, 
+    IUsersRepository usersRepository,
     ILogger<UsersService> logger,
     TelemetryClient telemetry,
     DaprClient daprClient) : IUsersService
 {
 
     private const string StateStoreName = "statestore";
+
+    private static Dictionary<string, string> defaultCacheMetaData = new Dictionary<string, string>
+    {
+        {
+            "ttlInSeconds", "900"
+        }
+    };
 
     public async Task<UserDetailsDto> Create(UserCreateDto dto, CancellationToken cancellationToken)
     {
@@ -33,19 +40,21 @@ public class UsersService(
             });
             throw new Exception("Failed to save user");
         }
+
         return user.ToDto();
     }
 
-    
-    
-    public  Task<UserDetailsDto> Get(Guid id, CancellationToken cancellationToken)
+
+
+    public Task<UserDetailsDto> Get(Guid id, CancellationToken cancellationToken)
     {
         return GetFromStateStoreOrRepository(id, cancellationToken);
     }
 
     private async Task<UserDetailsDto> GetFromStateStoreOrRepository(Guid userId, CancellationToken cancellationToken)
     {
-        var stateStoreValue = await daprClient.GetStateAsync<UserDetailsDto>(StateStoreName, CacheName.UserDetails(userId),
+        var stateStoreValue = await daprClient.GetStateAsync<UserDetailsDto>(StateStoreName,
+            CacheName.UserDetails(userId),
             cancellationToken: cancellationToken);
         if (stateStoreValue != null)
         {
@@ -53,7 +62,8 @@ public class UsersService(
         }
 
         var userDetailsFromRepository = await GetUserDetailsFromRepository(userId, cancellationToken);
-        await daprClient.SaveStateAsync(StateStoreName, CacheName.UserDetails(userId), userDetailsFromRepository, cancellationToken: cancellationToken);
+        await daprClient.SaveStateAsync(StateStoreName, CacheName.UserDetails(userId), userDetailsFromRepository,
+            cancellationToken: cancellationToken);
         return userDetailsFromRepository;
     }
 
@@ -73,6 +83,7 @@ public class UsersService(
         {
             throw new Exception("Failed to save user");
         }
+
         return domainModel.ToDto();
     }
 
@@ -81,8 +92,14 @@ public class UsersService(
         var result = await usersRepository.Save(domainModel, cancellationToken);
         if (result)
         {
-await             daprClient.SaveStateAsync(StateStoreName, CacheName.UserDetails(domainModel.Id), domainModel.ToDto());
+            await daprClient.SaveStateAsync(
+                StateStoreName,
+                CacheName.UserDetails(domainModel.Id),
+                domainModel.ToDto(),
+                metadata: defaultCacheMetaData,
+                cancellationToken: cancellationToken);
         }
+
         return result;
     }
 }
