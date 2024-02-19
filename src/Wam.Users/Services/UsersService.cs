@@ -20,7 +20,7 @@ public class UsersService(
 
     private const string StateStoreName = "statestore";
 
-    private static Dictionary<string, string> defaultCacheMetaData = new()
+    private readonly Dictionary<string, string> defaultCacheMetaData = new()
     {
         {
             "ttlInSeconds", "900"
@@ -62,7 +62,9 @@ public class UsersService(
         }
 
         var userDetailsFromRepository = await GetUserDetailsFromRepository(userId, cancellationToken);
-        await daprClient.SaveStateAsync(StateStoreName, CacheName.UserDetails(userId), userDetailsFromRepository,
+        await daprClient.SaveStateAsync(StateStoreName,
+            CacheName.UserDetails(userId), userDetailsFromRepository,
+            metadata: defaultCacheMetaData,
             cancellationToken: cancellationToken);
         return userDetailsFromRepository;
     }
