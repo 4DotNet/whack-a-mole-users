@@ -20,7 +20,7 @@ public class UsersService(
 
     private const string StateStoreName = "statestore";
 
-    private static Dictionary<string, string> defaultCacheMetaData = new Dictionary<string, string>
+    private static Dictionary<string, string> defaultCacheMetaData = new()
     {
         {
             "ttlInSeconds", "900"
