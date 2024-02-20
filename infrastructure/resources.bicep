@@ -133,14 +133,14 @@ resource apiContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = {
         }
       ]
       scale: {
-        minReplicas: 0
+        minReplicas: 1
         maxReplicas: 6
         rules: [
           {
             name: 'http-rule'
             http: {
               metadata: {
-                concurrentRequests: '6'
+                concurrentRequests: '20'
               }
             }
           }
