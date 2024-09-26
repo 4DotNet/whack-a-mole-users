@@ -68,6 +68,7 @@ jobs:
       - name: Transpile Infra
         working-directory: infrastructure
         run: |
+          bicep build-params prod.main.bicepparam
           bicep build-params test.main.bicepparam
           az bicep build --file main.bicep
       - name: Publish Artifact
