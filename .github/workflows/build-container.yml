@@ -101,7 +101,7 @@ jobs:
 
   production-deployment:
     if: github.ref == 'refs/heads/main'
-    needs: [test-deployment]
+    needs: [test-deployment, versionize]
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact
