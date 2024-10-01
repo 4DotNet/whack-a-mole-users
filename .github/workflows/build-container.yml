@@ -78,7 +78,7 @@ jobs:
           path: infrastructure/*.json
 
   test-deployment:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref != 'refs/heads/main'
     needs: [build, publish-bicep, versionize]
     runs-on: ubuntu-latest
     steps:
@@ -100,8 +100,8 @@ jobs:
           inlineScript: az deployment sub create --name test-$IMAGE_NAME --location northeurope --template-file ./infrastructure/main.json --parameters ./infrastructure/test.main.json --parameters containerVersion=${{needs.versionize.outputs.semver}} acrLoginServer=${{ secrets.ACR_LOGIN_SERVER }} acrUsername=${{ secrets.ACR_USERNAME }} acrPassword=${{ secrets.ACR_PASSWORD }}
 
   production-deployment:
-    if: github.ref == 'refs/heads/main'
-    needs: [test-deployment, versionize]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build, publish-bicep, versionize]
     runs-on: ubuntu-latest
     steps:
       - name: Download Artifact
